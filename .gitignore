@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js output
+.next/
+out/
+
+# tests and local artifacts
+coverage/
+output/
+public/maplibre/
+
+# local environment files
+.env
+.env.local
+.env.*.local
+
+# editor and operating-system files
+.DS_Store
+Thumbs.db
+*.log
+
+# TypeScript
+*.tsbuildinfo

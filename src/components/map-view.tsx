@@ -9,6 +9,7 @@ maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 interface MapViewProps {
   places: HistoricalPlace[];
+  collectedIds: string[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
@@ -98,7 +99,7 @@ function hasCoordinates(
   return place.longitude !== undefined && place.latitude !== undefined;
 }
 
-export function MapView({ places, selectedId, onSelect }: MapViewProps) {
+export function MapView({ places, collectedIds, selectedId, onSelect }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Map<string, { marker: Marker; element: HTMLButtonElement }>>(
@@ -142,7 +143,11 @@ export function MapView({ places, selectedId, onSelect }: MapViewProps) {
       const element = document.createElement("button");
       element.type = "button";
       element.className = "map-marker";
-      element.setAttribute("aria-label", `在地图上选择 ${place.name}`);
+      if (collectedIds.includes(place.id)) element.classList.add("is-collected");
+      element.setAttribute(
+        "aria-label",
+        `在地图上选择${collectedIds.includes(place.id) ? "已收藏的" : ""} ${place.name}`,
+      );
       element.title = place.name;
       element.addEventListener("click", () => onSelect(place.id));
       const marker = new maplibregl.Marker({ element, anchor: "bottom" })
@@ -164,7 +169,7 @@ export function MapView({ places, selectedId, onSelect }: MapViewProps) {
       markers.forEach(({ marker }) => marker.remove());
       markers.clear();
     };
-  }, [places, onSelect]);
+  }, [collectedIds, places, onSelect]);
 
   useEffect(() => {
     markersRef.current.forEach(({ element }, id) => {
@@ -185,6 +190,10 @@ export function MapView({ places, selectedId, onSelect }: MapViewProps) {
     <section className="map-panel" aria-label="历史地名地图">
       <div ref={containerRef} className="map-container" />
       <div className="map-caption">现代底图 · 虚线为现代省级边界 · 历史坐标来自 CHGIS</div>
+      <div className="map-legend" aria-label="地图图例">
+        <span><i className="legend-dot search-dot" aria-hidden="true" />搜索结果</span>
+        <span><i className="legend-dot collected-dot" aria-hidden="true" />已收藏</span>
+      </div>
     </section>
   );
 }

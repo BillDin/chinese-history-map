@@ -20,10 +20,10 @@ body {
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 
-button:focus-visible, input:focus-visible, a:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--focus) 65%, transparent);
   outline-offset: 2px;
 }
@@ -61,11 +61,13 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   z-index: 2;
 }
 
-.search-form { display: grid; grid-template-columns: minmax(280px, 1fr) 180px 104px; gap: 12px; align-items: end; max-width: 980px; }
-.field { display: grid; gap: 6px; }
+.search-form { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(260px, 340px) 104px; gap: 12px; align-items: end; max-width: 1100px; }
+.search-form.is-custom-period { grid-template-columns: minmax(200px, 1fr) minmax(220px, 300px) 140px 104px; }
+.field { display: grid; gap: 6px; min-width: 0; }
 .field span { font-size: 0.76rem; font-weight: 750; color: #4f5d55; letter-spacing: 0.03em; }
-.field input {
+.field input, .field select {
   width: 100%;
+  min-width: 0;
   height: 44px;
   padding: 0 13px;
   border: 1px solid #b8bdb7;
@@ -73,7 +75,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   color: var(--ink);
   background: white;
 }
-.field input:hover { border-color: #818d85; }
+.field input:hover, .field select:hover { border-color: #818d85; }
+.field select { padding-right: 6px; cursor: pointer; }
 .search-button {
   height: 44px;
   border: 0;
@@ -85,7 +88,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 }
 .search-button:hover:not(:disabled) { background: var(--red-dark); }
 .search-button:disabled { cursor: wait; opacity: 0.7; }
-.year-help { margin: 7px 0 0; color: var(--muted); font-size: 0.72rem; }
+.year-help { margin: 7px 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.6; }
+.year-help strong { color: var(--green); font-weight: 650; }
+.search-context { margin: 10px 0 0; color: var(--green); font-size: 0.74rem; line-height: 1.5; }
 
 .workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(330px, 390px) 1fr; }
 .results-panel {
@@ -95,11 +100,26 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   background: var(--panel);
   border-right: 1px solid var(--line);
 }
+.pin-collection { margin-bottom: 22px; padding: 14px; border: 1px solid #c8cbc3; background: #f4f6f0; }
+.collection-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.collection-heading h2 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: 1.05rem; }
+.clear-collection { padding: 4px 8px; border: 0; background: transparent; color: var(--red-dark); font-size: 0.72rem; font-weight: 750; cursor: pointer; }
+.clear-collection:hover { text-decoration: underline; text-underline-offset: 3px; }
+.collection-empty { margin: 10px 0 0; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
+.collection-list { list-style: none; margin: 11px 0 0; padding: 0; display: grid; gap: 6px; }
+.collection-item { display: grid; grid-template-columns: minmax(0, 1fr) 32px; border: 1px solid #d4d6ce; background: white; }
+.collection-select { min-width: 0; padding: 9px 10px; border: 0; border-left: 3px solid var(--red); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.collection-select:hover, .collection-select.is-selected { background: #fbf2ef; }
+.collection-name { font-family: Georgia, "Noto Serif SC", serif; font-size: 0.92rem; font-weight: 750; }
+.collection-select .result-meta { margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.remove-pin { border: 0; border-left: 1px solid #e0e1da; background: transparent; color: #777d76; font-size: 1.15rem; cursor: pointer; }
+.remove-pin:hover { background: #f7e8e5; color: var(--red-dark); }
 .results-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .results-heading h2 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: 1.18rem; }
 .result-count { padding: 4px 8px; border-radius: 999px; background: #e7ece7; color: #425249; font-size: 0.7rem; white-space: nowrap; }
 .ambiguity-note { margin: 14px 0 10px; color: var(--muted); font-size: 0.76rem; line-height: 1.5; }
 .result-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.result-row { display: grid; grid-template-columns: minmax(0, 1fr) 62px; align-items: stretch; }
 .result-item {
   width: 100%;
   padding: 13px 13px 12px;
@@ -112,6 +132,11 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   cursor: pointer;
   transition: border-color 120ms ease, background 120ms ease;
 }
+.pin-toggle { margin-left: -1px; padding: 6px; display: grid; place-content: center; gap: 2px; border: 1px solid var(--line); border-radius: 0 3px 3px 0; background: #f7f7f2; color: #4d5c53; font-size: 0.68rem; font-weight: 750; cursor: pointer; }
+.pin-toggle span { font-size: 1rem; line-height: 1; }
+.pin-toggle:hover:not(:disabled) { border-color: #a8aea7; background: #eef3ed; }
+.pin-toggle.is-collected { border-color: #c78b85; background: #f8e9e6; color: var(--red-dark); }
+.pin-toggle:disabled { cursor: not-allowed; opacity: 0.45; }
 .result-item:hover { border-color: #a8aea7; background: #faf9f3; }
 .result-item.is-selected { border-color: #b76c66; border-left-color: var(--red); background: #fbf2ef; }
 .result-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -142,9 +167,15 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .map-container, .map-loading { position: absolute; inset: 0; }
 .map-loading { display: grid; place-items: center; color: var(--muted); }
 .map-caption { position: absolute; z-index: 1; left: 10px; top: 10px; padding: 6px 9px; border: 1px solid rgba(75, 89, 80, 0.18); background: rgba(255, 253, 247, 0.92); color: #526058; font-size: 0.66rem; pointer-events: none; }
+.map-legend { position: absolute; z-index: 1; left: 10px; top: 44px; padding: 6px 9px; display: flex; gap: 12px; border: 1px solid rgba(75, 89, 80, 0.18); background: rgba(255, 253, 247, 0.92); color: #526058; font-size: 0.66rem; pointer-events: none; }
+.map-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend-dot { width: 9px; height: 9px; border: 1px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(30, 43, 36, 0.3); }
+.search-dot { background: var(--green); }
+.collected-dot { background: var(--red); }
 .map-marker { width: 22px; height: 28px; padding: 0; border: 2px solid white; border-radius: 50% 50% 50% 0; background: var(--green); box-shadow: 0 2px 8px rgba(30, 43, 36, 0.35); transform: rotate(-45deg); cursor: pointer; }
 .map-marker::after { content: ""; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: white; top: 6px; left: 6px; }
-.map-marker:hover, .map-marker.is-selected { width: 27px; height: 34px; background: var(--red); z-index: 2; }
+.map-marker.is-collected { background: var(--red); }
+.map-marker:hover, .map-marker.is-selected { width: 27px; height: 34px; background: var(--red-dark); z-index: 2; }
 .map-marker:hover::after, .map-marker.is-selected::after { width: 7px; height: 7px; top: 8px; left: 8px; }
 .maplibregl-ctrl-attrib { font-size: 10px; }
 
@@ -155,7 +186,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   .masthead h1 { font-size: 1.2rem; }
   .masthead-note { display: none; }
   .search-band { padding: 13px 14px 10px; }
-  .search-form { grid-template-columns: minmax(0, 1fr) 112px; }
+  .search-form { grid-template-columns: minmax(0, 1fr); }
+  .search-form.is-custom-period { grid-template-columns: minmax(0, 1fr) 112px; }
+  .place-field { grid-column: 1 / -1; }
   .search-button { grid-column: 1 / -1; }
   .workspace { display: flex; flex-direction: column; }
   .results-panel { order: 2; overflow-y: visible; padding: 17px 14px 24px; border-right: 0; border-top: 1px solid var(--line); }

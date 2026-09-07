@@ -1,6 +1,57 @@
 # CHGIS Temporal Gazetteer API notes
 
-Last verified: **2026-08-19**
+Faceted upstream schema last verified: **2026-08-19**. Later UI/live checks are dated below. Application contract reviewed against the source on **2026-09-07**; that documentation review did not re-verify live upstream data.
+
+[README](../README.md) · [Deployment guide](deployment.md) · [Third-party data terms](../THIRD_PARTY_DATA.md)
+
+## Application API: `GET /api/places`
+
+The browser calls this same-origin Next.js route. It validates the request, then calls the adapter in `src/lib/chgis/`. There is no API key or authentication layer in this application.
+
+| Parameter | Required | Contract |
+| --- | --- | --- |
+| `q` | Yes | Trimmed placename or pinyin; 1–100 JavaScript string code units after trimming |
+| `year` | No | Trimmed integer text from `-222` through `1911`; omitted or blank means no date filter |
+
+Negative years are passed through as supplied. `0` is accepted by the current validator; the application does not define a separate calendar conversion. Period presets resolve to this same `year` parameter. There is no pagination, bounding-box filter, or date-range API.
+
+For a single manual check against a running local instance:
+
+```bash
+curl --get "http://localhost:3000/api/places" --data-urlencode "q=长安" --data-urlencode "year=742"
+```
+
+On Windows PowerShell, use `curl.exe` in the command above. This makes one live CHGIS query; inspect the response without saving it as a fixture or dataset.
+
+### Successful response
+
+A `200` response is JSON with `Cache-Control: no-store`:
+
+| Field | Meaning |
+| --- | --- |
+| `query` | Trimmed submitted query |
+| `year` | Submitted integer year; omitted when no year was supplied |
+| `total` | Parsed upstream total when available, otherwise `places.length` |
+| `places` | Normalized CHGIS records; an empty array is a valid no-match result |
+
+The source of truth for record fields is [`HistoricalPlace`](../src/lib/chgis/types.ts). Each retained record has an `id`, `name`, and `parents` array. Pinyin, feature type, years, geometry, coordinates, and other metadata are included only when available. Missing values are omitted, not filled with guessed data. `longitude`/`latitude` are degrees, and only usable point records expose them. An empty `parents` array means no parent name was provided, not that the place had no historical parent.
+
+`canonicalUrl` uses an upstream URL under `https://chgis.hudci.org/`, or a canonical link built from the record ID. No extra record request is made to construct that link. Same-name records retain their separate IDs. `total` may differ from `places.length` after source/record filtering; the UI displays `places.length`, not the upstream total.
+
+### Errors and cancellation
+
+Errors use the JSON shape `{ "error": "human-readable message" }`:
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Missing/overlong query, non-integer year, or year outside the accepted range |
+| `502` | Upstream connection failure, non-success HTTP status, or unreadable JSON |
+| `504` | The upstream fetch reached its configured timeout |
+| `500` | An unexpected application error |
+
+The current normalizer treats valid JSON with a missing/non-array `placenames` field as an empty result, rather than a schema error. A `200` alone therefore does not prove that the upstream schema is unchanged.
+
+The client can abort its previous browser request. That signal is not forwarded to the CHGIS fetch, which has its own timeout. Neither layer retries automatically. Host/CDN-generated errors can have a different format from this route's JSON errors.
 
 ## Endpoint used
 
@@ -82,7 +133,7 @@ Canonical JSON is available at `/tgaz/placename/json/{id}` and contains richer s
 
 - All unusual upstream field names are confined to `src/lib/chgis/`.
 - String counts, years, and coordinates are parsed defensively.
-- Coordinates are exposed only when `object type` is exactly `POINT` and both numbers are within geographic bounds.
+- Coordinates are exposed only when the trimmed `object type` equals `POINT` case-insensitively and both numbers are within geographic bounds.
 - `POLYGON` search records may contain a representative-looking pair such as longitude `0`; these are retained in the result list but deliberately marked unmappable.
 - The compact `name` field is retained as `name`; it is not guessed to be simplified or traditional.
 - The compact `parent name` may include a parent transcription in parentheses and is preserved verbatim.
@@ -101,3 +152,5 @@ On **2026-09-06**, a browser search for `长安` using the **唐 · 开元十五
 - Upstream requests use an 8-second default timeout, no retry loop, `no-store`, and human-readable 502/504 adapter responses.
 - Some results are non-point geometries or lack usable coordinates; they remain selectable but do not create map pins.
 - Upstream total counts can disagree with usable CHGIS records if malformed or non-CHGIS items are returned. The UI reports the number actually returned by this adapter.
+- Keep the route dynamic and preserve `no-store` through any hosting/CDN configuration. Do not introduce response-body logging, persistent caches, bulk probes, or saved live test fixtures. The session pin collection exists only in browser memory and disappears on a page reload.
+- The host's request duration must exceed `CHGIS_TIMEOUT_MS` plus response-processing overhead. An invalid or non-positive timeout setting falls back to `8000` ms. See the [deployment guide](deployment.md) for runtime and environment settings.

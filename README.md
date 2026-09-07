@@ -6,6 +6,8 @@ A small, open-source research interface for locating Chinese historical placenam
 
 [English](#english) · [中文](#中文)
 
+**Documentation / 文档：** [Deployment / 线上部署](docs/deployment.md) · [API reference / 接口说明](docs/chgis-api.md) · [Data licenses / 数据许可](THIRD_PARTY_DATA.md) · [Apache-2.0](LICENSE)
+
 ---
 
 ## English
@@ -22,22 +24,26 @@ The scope is intentionally narrow. This is not a historical GIS suite: it has no
 
 Install the following software:
 
-- Node.js 20.9 or later (Node.js 22 LTS is a good default).
-- pnpm 11.19.0 or a compatible pnpm 11 release.
+- Node.js 22.13 or later; Node.js 24 LTS is recommended. The pinned pnpm 11 toolchain requires this minimum, even though Next.js itself supports older Node.js versions.
+- pnpm 11.19.0, as pinned in `package.json`.
 - Git, if you are cloning the repository.
 
 The application needs internet access while running. The server calls CHGIS for each search, and the browser loads the default map style, vector tiles, fonts, and related assets from OpenFreeMap.
 
 #### 2. Install the project
 
-From the repository root:
+Clone the repository, then install from its root:
 
 ```bash
+git clone https://github.com/BillDin/chinese-history-map.git
+cd chinese-history-map
 corepack enable
 pnpm install --frozen-lockfile
 ```
 
-If pnpm is already installed, the `corepack enable` command is unnecessary. No database or API key is required.
+If pnpm 11.19.0 is already installed, skip `corepack enable`. If Corepack is unavailable, install the pinned package manager with `npm install --global pnpm@11.19.0`. Check `node --version` and `pnpm --version` before installing dependencies. No database or API key is required.
+
+Keep `pnpm-workspace.yaml` with the package manifest and lockfile: it permits the native setup script for the lint toolchain's `unrs-resolver` dependency, so a fresh pnpm 11 install can finish without an interactive build-approval prompt. It also keeps the package cache in `.pnpm-store/`, which Git and Docker ignore.
 
 #### 3. Optional configuration
 
@@ -59,7 +65,7 @@ cp .env.example .env.local
 | `CHGIS_API_URL` | Server | `https://chgis.hudci.org/tgaz/placename` | CHGIS faceted-search endpoint override |
 | `CHGIS_TIMEOUT_MS` | Server | `8000` | Positive upstream timeout in milliseconds |
 
-`NEXT_PUBLIC_MAP_STYLE_URL` is compiled into the browser bundle. Set it before `pnpm dev` or `pnpm build`, then restart or rebuild after changing it. Server-only CHGIS settings can be changed at runtime.
+`NEXT_PUBLIC_MAP_STYLE_URL` is compiled into the browser bundle. Set it before `pnpm dev` or `pnpm build`, then restart or rebuild after changing it. CHGIS settings are read on the server; apply changes by restarting a self-hosted process or redeploying on a managed host. Keep local environment files out of Git.
 
 Any replacement map style must supply its required attribution. The additional province-boundary and Chinese-first label layers expect an `openmaptiles` vector source; another compatible style will still load, but those extra context layers are skipped if that source is absent.
 
@@ -99,7 +105,7 @@ Then visit `http://<your-computer-lan-ip>:3000` from that device. Your operating
 5. **Understand coordinate status.** **地图点** means CHGIS returned a usable point. **无点坐标** means the record is valid but cannot be plotted in this version. It is still available for comparison and inspection.
 6. **Collect pins for comparison.** Select **加入** beside any result with coordinates. Collected records stay in the pin collection across later searches and appear together on the map. Select a collected item to inspect it, remove pins individually, or clear the collection. The collection lasts only for the current page session and does not persist CHGIS data.
 7. **Select a record or marker.** Selecting a result highlights the corresponding marker and moves the map to it. Selecting a marker chooses the same record in the result panel. The map fits the current results and collected pins into one view; duplicate records appear only once.
-8. **Inspect the details.** The selected-record card shows the available type, date range, administrative parents, coordinates, and source. **查看 CHGIS 原始记录** opens the canonical upstream record in a new tab when CHGIS provides a URL.
+8. **Inspect the details.** The selected-record card shows the available type, date range, administrative parents, coordinates, and source. **查看 CHGIS 原始记录** opens the upstream record in a new tab. The adapter uses a CHGIS URL supplied by the service or constructs the canonical link from its record ID.
 9. **Navigate the map.** Drag to pan, use the mouse wheel or trackpad to zoom, and use the `+`/`−` buttons in the upper-right corner. The map supports zoom levels 2–18. Province-level boundaries and province/major-city labels provide modern geographic context.
 
 The basemap is modern. Its dashed province-level boundaries and city labels are orientation aids, not reconstructions of historical jurisdictions. Only the CHGIS result markers represent historical gazetteer coordinates. Always preserve the attribution displayed along the bottom of the map.
@@ -108,11 +114,17 @@ The presets are navigation aids for relatively stable administrative frameworks,
 
 If a search returns nothing, try a simplified/traditional variant, pinyin, or choose **不限年代**. If the map is blank, confirm that the browser can reach OpenFreeMap and that `/maplibre/maplibre-gl-worker.mjs` returns successfully. A custom raster-only style may also stop providing tiles beyond its own maximum zoom.
 
+### Deploy online
+
+For a personal, non-commercial project, **Vercel Hobby** is the recommended starting point. This is a Next.js application with a dynamic `/api/places` route, so it needs a server or serverless runtime. GitHub Pages alone cannot run it.
+
+The [deployment guide](docs/deployment.md#english) covers Vercel settings (including Corepack for pnpm 11), Netlify, Cloudflare Workers tradeoffs, the existing Dockerfile, and checks to perform after deployment. No database or CHGIS API key is needed. Hosting plan details were checked on **2026-09-07**; linked provider terms are authoritative.
+
 ### Commands and tests
 
 ```bash
 pnpm lint       # ESLint and Next.js rules
-pnpm typecheck  # Strict TypeScript, no output
+pnpm typecheck  # Strict TypeScript, no JavaScript emitted
 pnpm test       # Synthetic unit and interaction tests
 pnpm build      # Optimized production build
 pnpm start      # Run the built application
@@ -169,22 +181,26 @@ Keep the scope focused on rapid placename lookup and selection. Read [AGENTS.md]
 
 请先安装：
 
-- Node.js 20.9 或更高版本，建议使用 Node.js 22 LTS。
-- pnpm 11.19.0，或兼容的 pnpm 11 版本。
+- Node.js 22.13 或更高版本，建议使用 Node.js 24 LTS。项目锁定的 pnpm 11 工具链要求这一最低版本，即使 Next.js 本身支持更旧的 Node.js。
+- pnpm 11.19.0，与 `package.json` 中锁定的版本一致。
 - 如果需要克隆仓库，还需要 Git。
 
 网站运行时需要联网：服务端会在每次搜索时访问 CHGIS，浏览器则会从 OpenFreeMap 加载默认地图样式、矢量瓦片、字体和相关资源。
 
 #### 2. 安装项目
 
-在仓库根目录执行：
+克隆仓库，然后在仓库根目录安装依赖：
 
 ```bash
+git clone https://github.com/BillDin/chinese-history-map.git
+cd chinese-history-map
 corepack enable
 pnpm install --frozen-lockfile
 ```
 
-如果已经安装 pnpm，可以跳过 `corepack enable`。本项目不需要数据库或 API 密钥。
+如果已经安装 pnpm 11.19.0，可以跳过 `corepack enable`。若系统没有 Corepack，可执行 `npm install --global pnpm@11.19.0` 安装指定版本。安装依赖前可用 `node --version` 和 `pnpm --version` 检查版本。本项目不需要数据库或 API 密钥。
+
+请保留与依赖清单、锁文件一起提交的 `pnpm-workspace.yaml`：它允许检查工具依赖 `unrs-resolver` 的原生模块安装脚本，使全新的 pnpm 11 安装无需交互式确认即可完成。依赖缓存保存在项目内的 `.pnpm-store/`，由 Git 和 Docker 忽略。
 
 #### 3. 可选配置
 
@@ -206,7 +222,7 @@ cp .env.example .env.local
 | `CHGIS_API_URL` | 服务端 | `https://chgis.hudci.org/tgaz/placename` | 覆盖 CHGIS 分面搜索接口地址 |
 | `CHGIS_TIMEOUT_MS` | 服务端 | `8000` | 上游请求超时毫秒数，必须为正数 |
 
-`NEXT_PUBLIC_MAP_STYLE_URL` 会被编译进浏览器代码。请在执行 `pnpm dev` 或 `pnpm build` 前设置；修改后需要重启或重新构建。CHGIS 的服务端变量可以在运行时修改。
+`NEXT_PUBLIC_MAP_STYLE_URL` 会被编译进浏览器代码。请在执行 `pnpm dev` 或 `pnpm build` 前设置；修改后需要重启或重新构建。CHGIS 变量由服务端读取；自行托管时修改后需重启进程，使用托管平台时需重新部署。请勿把本地环境文件提交到 Git。
 
 替换底图时必须保留该地图服务要求的署名。项目额外添加的省级边界和中文优先标签依赖名为 `openmaptiles` 的矢量数据源；如果自定义样式没有该数据源，底图仍可正常加载，但不会添加这些辅助图层。
 
@@ -246,7 +262,7 @@ pnpm dev --hostname 0.0.0.0
 5. **理解坐标状态。** “地图点”表示 CHGIS 返回了可用点坐标；“无点坐标”表示记录本身有效，但当前版本无法把它画在地图上。这类记录仍然可以查看和比较。
 6. **收藏图钉进行对照。** 点击带坐标结果旁的“加入”，即可把记录放进图钉收藏。收藏会跨后续搜索保留，并始终一起显示在地图上；可点击收藏项查看详情、逐个移除，或一键清空。收藏仅存在于当前页面会话，不会持久化 CHGIS 数据。
 7. **选择结果或地图标记。** 点击列表记录后，对应地图标记会高亮，地图也会移动到该位置；点击地图标记同样会选中记录。地图会把当前结果和已收藏图钉纳入同一视野，相同记录只显示一次。
-8. **查看记录详情。** “已选记录”卡片会展示可用的类型、年代、隶属关系、坐标和来源。如果 CHGIS 提供了规范链接，点击“查看 CHGIS 原始记录”会在新标签页打开上游记录。
+8. **查看记录详情。** “已选记录”卡片会展示可用的类型、年代、隶属关系、坐标和来源。点击“查看 CHGIS 原始记录”会在新标签页打开上游记录。适配层优先采用服务提供的 CHGIS 链接，否则根据记录 ID 构造规范链接。
 9. **操作地图。** 拖动地图可平移，滚轮或触控板可缩放，也可使用右上角的 `+`、`−` 按钮。地图支持 2–18 级缩放；省一级边界、省级名称和主要城市名称用于提供现代地理参照。
 
 请注意，底图是**现代地图**。虚线省级边界和城市标签只用于帮助辨认方位，并不是历史行政区划复原；只有 CHGIS 搜索结果标记代表历史地名库坐标。地图底部的第三方署名必须始终保留。
@@ -255,11 +271,17 @@ pnpm dev --hostname 0.0.0.0
 
 如果没有搜索结果，可以尝试简繁体变体、拼音，或选择“不限年代”后重试。如果底图空白，请确认浏览器能访问 OpenFreeMap，并检查 `/maplibre/maplibre-gl-worker.mjs` 是否能正常返回。使用自定义纯栅格样式时，超过该样式自身的最大缩放级别后也可能没有瓦片。
 
+### 线上部署
+
+如果用于个人、非商业项目，推荐从 **Vercel Hobby** 开始。本项目是包含动态 `/api/places` 接口的 Next.js 应用，需要服务端或 Serverless 运行环境；单独使用 GitHub Pages 无法运行完整应用。
+
+[部署指南](docs/deployment.md#中文)提供 Vercel 配置（含 pnpm 11 所需的 Corepack 设置）、Netlify、Cloudflare Workers 的取舍、现有 Dockerfile 的用法和部署后检查步骤。不需要数据库或 CHGIS API 密钥。免费套餐信息核对于 **2026-09-07**，具体条款以链接中的平台说明为准。
+
 ### 常用命令与测试
 
 ```bash
 pnpm lint       # ESLint 与 Next.js 规则检查
-pnpm typecheck  # 严格 TypeScript 类型检查，不输出文件
+pnpm typecheck  # 严格 TypeScript 类型检查，不生成 JavaScript
 pnpm test       # 使用虚构数据运行单元测试和交互测试
 pnpm build      # 创建优化后的生产构建
 pnpm start      # 运行已构建的网站

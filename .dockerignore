@@ -2,6 +2,7 @@
 .gitignore
 .next
 node_modules
+.pnpm-store
 coverage
 output
 *.log

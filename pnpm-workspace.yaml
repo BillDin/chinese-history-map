@@ -1,0 +1,6 @@
+# Keep the package cache inside the project; Git and Docker ignore it.
+storeDir: .pnpm-store
+
+# Native module setup required by ESLint's import resolver.
+allowBuilds:
+  unrs-resolver: true

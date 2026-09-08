@@ -12,7 +12,7 @@ For a personal, non-commercial instance, **Vercel Hobby** is the recommended sta
 
 | Platform | Free option and fit |
 | --- | --- |
-| [Vercel Hobby](https://vercel.com/docs/plans/hobby) | Free for personal, non-commercial use, within usage limits. Uses the existing Next.js build; see the pnpm setting below. |
+| [Vercel Hobby](https://vercel.com/docs/plans/hobby) | Free for personal, non-commercial use, within usage limits. Uses the repository's Next.js and pnpm build settings. |
 | [Netlify Free](https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans/) | 300 credits/month with a hard limit. Its [Next.js adapter](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/) supports Route Handlers. Builds and traffic consume the allowance. |
 | [Cloudflare Workers Free](https://developers.cloudflare.com/workers/platform/pricing/) | 100,000 dynamic requests/day and 10 ms CPU time per invocation. Requires a Workers-compatible build and runtime validation; this repository does not include that setup. Network wait and CPU time are different limits. |
 | [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) | Static hosting only. Cannot run this application's dynamic API; pushing the repository to GitHub does not deploy the website. |
@@ -23,7 +23,7 @@ Cloudflare currently recommends [vinext](https://developers.cloudflare.com/worke
 
 1. Sign in to Vercel, select the **Hobby** plan for eligible personal use, and import this GitHub repository into a new project.
 2. Use the repository root and the following build settings.
-3. Add `ENABLE_EXPERIMENTAL_COREPACK=1` to each environment you intend to deploy, including Production and Preview. Vercel's [Corepack support](https://vercel.com/docs/builds/configure-a-build#corepack) reads the existing `packageManager: pnpm@11.19.0` pin. Its default [pnpm detection](https://vercel.com/docs/package-managers) may select an older version from the lockfile, so this setting matters.
+3. Keep the install/build settings from [`vercel.json`](../vercel.json). They use `npx --yes pnpm@11.19.0` explicitly, so no Corepack environment flag is required. Vercel's default [pnpm detection](https://vercel.com/docs/package-managers) can otherwise select an older version from the lockfile.
 4. Add optional application variables from [`.env.example`](../.env.example) only if changing the defaults. Deploy, then perform the checks below.
 
 | Setting | Value |
@@ -31,13 +31,15 @@ Cloudflare currently recommends [vinext](https://developers.cloudflare.com/worke
 | Framework preset | Next.js |
 | Root directory | Repository root (`./`) |
 | Node.js | `24.x` (the toolchain requires at least 22.13) |
-| Install command | Leave automatic; enable Corepack as above |
-| Build command | `pnpm build` |
+| Install command | From `vercel.json`: `npx --yes pnpm@11.19.0 install --frozen-lockfile` |
+| Build command | From `vercel.json`: `npx --yes pnpm@11.19.0 build` |
 | Output directory | Leave the Next.js default; do not set it to `out` or `public` |
 
 Keep the `pnpm build` command: its `prebuild` hook copies both MapLibre worker modules into `public/maplibre/`. Calling `next build` directly skips that hook and can leave the map blank at higher zoom levels. Generated worker files should stay out of Git.
 
-The build log should show pnpm **11.19.0** and `Prepared the MapLibre vector-tile worker in public/maplibre.` If installation reports a lockfile/version mismatch, check Corepack and Node settings before changing dependencies or the lockfile. Use the linked plan page to check the current allowance and what happens when it is exhausted.
+The build log should show pnpm **11.19.0** and `Prepared the MapLibre vector-tile worker in public/maplibre.` If installation reports a lockfile/version mismatch, check the install command and Node settings before changing dependencies or the lockfile. Use the linked plan page to check the current allowance and what happens when it is exhausted.
+
+On Vercel (`VERCEL=1`), `next.config.ts` leaves `output` unset so the platform's adapter builds its functions. Local and Docker builds keep `output: "standalone"`. This avoids the [Next.js 16.3 standalone/adapter issue](https://github.com/vercel/next.js/issues/96657), which can fail after compilation with `ENOENT .next/next-server.js.nft.json` despite a successful local build.
 
 ### Netlify: alternative setup
 
@@ -93,13 +95,15 @@ Cloudflare 当前对新的 Next.js Workers 部署推荐 [vinext](https://develop
 ### Vercel 部署步骤（推荐）
 
 1. 登录 Vercel，为符合条件的个人用途选择 **Hobby**，新建项目并导入本 GitHub 仓库。
-2. 项目根目录选 `./`，框架选 **Next.js**，Node.js 选 **24.x**，构建命令为 `pnpm build`。安装命令和输出目录保持自动识别，不要把输出目录改成 `out` 或 `public`。
-3. 在准备部署的环境中（包括 Production、Preview）设置 `ENABLE_EXPERIMENTAL_COREPACK=1`。[Vercel 的 Corepack 支持](https://vercel.com/docs/builds/configure-a-build#corepack)会读取 `package.json` 中锁定的 `pnpm@11.19.0`；只靠[锁文件自动识别](https://vercel.com/docs/package-managers)可能选中旧版 pnpm。
+2. 项目根目录选 `./`，框架选 **Next.js**，Node.js 选 **24.x**。输出目录保持 Next.js 默认值，不要改成 `out` 或 `public`。
+3. 保留 [`vercel.json`](../vercel.json)中的安装和构建设置：`npx --yes pnpm@11.19.0 install --frozen-lockfile` 与 `npx --yes pnpm@11.19.0 build`。这样无需额外设置 Corepack 环境变量；只靠[锁文件自动识别](https://vercel.com/docs/package-managers)可能选中旧版 pnpm。
 4. 应用默认配置可直接使用。需要更换底图、上游地址或超时值时，再根据 [`.env.example`](../.env.example)填写平台环境变量，然后部署并执行下方检查。
 
 请保留 `pnpm build`：它会先执行 `prebuild`，把 MapLibre 的两个 worker 模块复制到 `public/maplibre/`。直接执行 `next build` 会跳过此步骤，可能导致放大地图后底图空白。生成的 worker 文件无需提交到 Git。
 
-构建日志应显示 pnpm **11.19.0** 和 `Prepared the MapLibre vector-tile worker in public/maplibre.`。如果出现锁文件或包管理器版本不兼容，先检查 Corepack 与 Node.js 配置。免费额度及用尽后的行为以平台方案页面为准。
+构建日志应显示 pnpm **11.19.0** 和 `Prepared the MapLibre vector-tile worker in public/maplibre.`。如果出现锁文件或包管理器版本不兼容，先检查安装命令与 Node.js 配置。免费额度及用尽后的行为以平台方案页面为准。
+
+在 Vercel 上（`VERCEL=1`），`next.config.ts` 不设置 `output`，交由平台适配器打包函数；本地和 Docker 构建继续使用 `output: "standalone"`。这规避了 [Next.js 16.3 的 standalone/适配器兼容问题](https://github.com/vercel/next.js/issues/96657)：该问题会在编译完成后因缺少 `.next/next-server.js.nft.json` 而失败，即使本地构建正常。
 
 ### Netlify 备选步骤
 

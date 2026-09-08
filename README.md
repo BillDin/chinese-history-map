@@ -118,7 +118,7 @@ If a search returns nothing, try a simplified/traditional variant, pinyin, or ch
 
 For a personal, non-commercial project, **Vercel Hobby** is the recommended starting point. This is a Next.js application with a dynamic `/api/places` route, so it needs a server or serverless runtime. GitHub Pages alone cannot run it.
 
-The [deployment guide](docs/deployment.md#english) covers Vercel settings (including Corepack for pnpm 11), Netlify, Cloudflare Workers tradeoffs, the existing Dockerfile, and checks to perform after deployment. No database or CHGIS API key is needed. Hosting plan details were checked on **2026-09-07**; linked provider terms are authoritative.
+The [deployment guide](docs/deployment.md#english) covers the checked-in Vercel settings, Netlify, Cloudflare Workers tradeoffs, the existing Dockerfile, and checks to perform after deployment. `vercel.json` pins the install/build commands to pnpm 11.19.0, and `next.config.ts` uses Vercel's native output on that platform while retaining standalone output for Docker. No database or CHGIS API key is needed. Hosting plan details were checked on **2026-09-07**; linked provider terms are authoritative.
 
 ### Commands and tests
 
@@ -275,7 +275,7 @@ pnpm dev --hostname 0.0.0.0
 
 如果用于个人、非商业项目，推荐从 **Vercel Hobby** 开始。本项目是包含动态 `/api/places` 接口的 Next.js 应用，需要服务端或 Serverless 运行环境；单独使用 GitHub Pages 无法运行完整应用。
 
-[部署指南](docs/deployment.md#中文)提供 Vercel 配置（含 pnpm 11 所需的 Corepack 设置）、Netlify、Cloudflare Workers 的取舍、现有 Dockerfile 的用法和部署后检查步骤。不需要数据库或 CHGIS API 密钥。免费套餐信息核对于 **2026-09-07**，具体条款以链接中的平台说明为准。
+[部署指南](docs/deployment.md#中文)提供仓库内的 Vercel 配置、Netlify、Cloudflare Workers 的取舍、现有 Dockerfile 的用法和部署后检查步骤。`vercel.json` 将安装和构建命令固定到 pnpm 11.19.0；`next.config.ts` 在 Vercel 上使用平台原生输出，Docker 构建仍使用 standalone。不需要数据库或 CHGIS API 密钥。免费套餐信息核对于 **2026-09-07**，具体条款以链接中的平台说明为准。
 
 ### 常用命令与测试
 

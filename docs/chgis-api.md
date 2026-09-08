@@ -146,6 +146,8 @@ Small read-only queries for `长安`, `长安` in year `742`, `洛阳` in year `
 
 On **2026-09-06**, a browser search for `长安` using the **唐 · 开元十五道** preset (`741`) returned one mappable record. The production UI was also checked for custom-year preservation, rejection of `1912`, accurate submitted-year labels, and a 375-pixel viewport. No live response was saved as a fixture.
 
+On **2026-09-07**, the public [Vercel production instance](https://chinese-history-map.vercel.app) successfully searched `长安` with the **唐 · 天宝郡制** preset (`742`). The route returned `200` JSON with `Cache-Control: no-store` and one mappable record; map selection and session pin collection worked. Empty queries and year `1912` returned `400` JSON. This was a small deployment check, not a comprehensive upstream schema review. No live response payload was saved or committed.
+
 ## Known quirks and operational behavior
 
 - The service is scholarly infrastructure and can be slow or unavailable.

@@ -6,6 +6,8 @@ A small, open-source research interface for locating Chinese historical placenam
 
 [English](#english) · [中文](#中文)
 
+**Live website / 在线访问：** [chinese-history-map.vercel.app](https://chinese-history-map.vercel.app) — hosted on Vercel Hobby / 托管于 Vercel Hobby。
+
 **Documentation / 文档：** [Deployment / 线上部署](docs/deployment.md) · [API reference / 接口说明](docs/chgis-api.md) · [Data licenses / 数据许可](THIRD_PARTY_DATA.md) · [Apache-2.0](LICENSE)
 
 ---
@@ -115,6 +117,8 @@ The presets are navigation aids for relatively stable administrative frameworks,
 If a search returns nothing, try a simplified/traditional variant, pinyin, or choose **不限年代**. If the map is blank, confirm that the browser can reach OpenFreeMap and that `/maplibre/maplibre-gl-worker.mjs` returns successfully. A custom raster-only style may also stop providing tiles beyond its own maximum zoom.
 
 ### Deploy online
+
+The [public instance](https://chinese-history-map.vercel.app) was deployed and checked on **2026-09-07**, including live search, map selection, and pin collection. See the [current deployment and update workflow](docs/deployment.md#current-deployment) before publishing changes; GitHub pushes do not yet trigger deployment automatically.
 
 For a personal, non-commercial project, **Vercel Hobby** is the recommended starting point. This is a Next.js application with a dynamic `/api/places` route, so it needs a server or serverless runtime. GitHub Pages alone cannot run it.
 
@@ -272,6 +276,8 @@ pnpm dev --hostname 0.0.0.0
 如果没有搜索结果，可以尝试简繁体变体、拼音，或选择“不限年代”后重试。如果底图空白，请确认浏览器能访问 OpenFreeMap，并检查 `/maplibre/maplibre-gl-worker.mjs` 是否能正常返回。使用自定义纯栅格样式时，超过该样式自身的最大缩放级别后也可能没有瓦片。
 
 ### 线上部署
+
+[公开网站](https://chinese-history-map.vercel.app)已于 **2026-09-07** 部署并验证，实时搜索、地图定位和图钉收藏均正常。发布修改前请阅读[当前部署与更新方式](docs/deployment.md#当前部署)：目前推送 GitHub 尚不会自动更新网站。
 
 如果用于个人、非商业项目，推荐从 **Vercel Hobby** 开始。本项目是包含动态 `/api/places` 接口的 Next.js 应用，需要服务端或 Serverless 运行环境；单独使用 GitHub Pages 无法运行完整应用。
 

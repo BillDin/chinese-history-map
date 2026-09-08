@@ -2,9 +2,18 @@
 
 [English](#english) · [中文](#中文) · [README](../README.md) · [API reference](chgis-api.md)
 
-Provider documentation checked on **2026-09-07**. These are setup instructions, not a claim that a production deployment has already been tested. Free-plan limits and terms can change.
+Provider documentation checked on **2026-09-07**. The Vercel production instance was verified on the same date; Netlify, Cloudflare Workers, and Docker remain setup guidance. Free-plan limits and terms can change.
 
 ## English
+
+### Current deployment
+
+- Public website: [chinese-history-map.vercel.app](https://chinese-history-map.vercel.app), accessible without a Vercel login.
+- Hosting: **Vercel Hobby**, project `chinese-history-map`; [project dashboard](https://vercel.com/1-a1e9/chinese-history-map) for its owner.
+- First verified production build: [`a4d0eab`](https://github.com/BillDin/chinese-history-map/commit/a4d0eaba580cfc4f7e056b28f627b16e8b58186c), published by uploading source files through the Vercel plugin.
+- Git integration is not connected. A GitHub push alone does not update this instance. For an update, run the four repository checks, commit and push the changes, then request another production deployment of this project through the Vercel plugin. Once the owner connects the repository in **Settings → Git**, verify the production branch is `master` before relying on automatic deployments.
+
+Verification on **2026-09-07** confirmed public HTTP access, both JavaScript worker files, a live `长安` / `742` search with `200` JSON and `Cache-Control: no-store`, map markers and selection, session pin collection, and vector tiles/labels after zooming. Map attribution remained present, the browser reported no console errors, and an invalid year returned `400` JSON. No CHGIS response payloads were saved.
 
 ### Choose a host
 
@@ -79,6 +88,15 @@ For a Node.js server without Docker, use `pnpm install --frozen-lockfile`, `pnpm
 
 ## 中文
 
+### 当前部署
+
+- 公开网址：[chinese-history-map.vercel.app](https://chinese-history-map.vercel.app)，访问者无需登录 Vercel。
+- 托管方案：**Vercel Hobby**，项目名 `chinese-history-map`；所有者可打开[项目控制台](https://vercel.com/1-a1e9/chinese-history-map)。
+- 首次验证通过的生产构建：[`a4d0eab`](https://github.com/BillDin/chinese-history-map/commit/a4d0eaba580cfc4f7e056b28f627b16e8b58186c)，通过 Vercel 插件上传源文件发布。
+- 尚未连接 Git 集成，推送 GitHub 不会自动更新此网站。更新时先运行仓库要求的四项检查、提交并推送修改，再通过 Vercel 插件为此项目发起新的生产部署。所有者在 **Settings → Git** 连接仓库后，应确认生产分支为 `master`，再使用自动部署。
+
+**2026-09-07** 已验证：公开 HTTP 访问、两个 JavaScript worker 文件、“长安／742 年”实时查询返回 `200` JSON 和 `Cache-Control: no-store`、地图标记与定位、会话内图钉收藏，以及放大后的矢量瓦片和文字标签。地图保留署名，浏览器无控制台错误，非法年份返回 `400` JSON。未保存 CHGIS 响应数据。
+
 ### 选择平台
 
 个人、非商业用途推荐 **Vercel Hobby**。项目的 `/api/places` 需要服务端运行环境和访问 CHGIS 的 HTTPS 出站连接；访问者的浏览器还需连接底图服务。不需要数据库、持久磁盘或 CHGIS API 密钥。
@@ -136,4 +154,4 @@ docker run --rm -p 3000:3000 --env CHGIS_TIMEOUT_MS=8000 chinese-history-map
 3. 打开 `/api/places?q=test&year=1912`，应返回 `400` JSON，且不会访问 CHGIS。返回结构见[接口契约](chgis-api.md#application-api-get-apiplaces)。
 4. 底图正常但搜索失败时，检查 API 状态：`502` 对应上游连接、状态或 JSON 问题，`504` 对应上游超时。搜索正常但底图空白时，检查 worker 文件和浏览器到样式、瓦片服务的连接。
 
-平台说明核对于 **2026-09-07**；本页提供配置指导，不代表已在这些平台完成生产部署验证。
+平台说明核对于 **2026-09-07**；Vercel 生产实例已于当日完成上述验证，其余平台和 Docker 步骤为配置指导。

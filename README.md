@@ -118,7 +118,7 @@ If a search returns nothing, try a simplified/traditional variant, pinyin, or ch
 
 ### Deploy online
 
-The [public instance](https://chinese-history-map.vercel.app) was deployed and checked on **2026-09-07**, including live search, map selection, and pin collection. See the [current deployment and update workflow](docs/deployment.md#current-deployment) before publishing changes; GitHub pushes do not yet trigger deployment automatically.
+The [public instance](https://chinese-history-map.vercel.app) was deployed and checked on **2026-09-07**, including live search, map selection, and pin collection. Vercel is connected to this GitHub repository: pushes to `master` trigger production deployments, and other branches receive preview deployments. See the [current deployment and update workflow](docs/deployment.md#current-deployment) before publishing changes.
 
 For a personal, non-commercial project, **Vercel Hobby** is the recommended starting point. This is a Next.js application with a dynamic `/api/places` route, so it needs a server or serverless runtime. GitHub Pages alone cannot run it.
 
@@ -277,7 +277,7 @@ pnpm dev --hostname 0.0.0.0
 
 ### 线上部署
 
-[公开网站](https://chinese-history-map.vercel.app)已于 **2026-09-07** 部署并验证，实时搜索、地图定位和图钉收藏均正常。发布修改前请阅读[当前部署与更新方式](docs/deployment.md#当前部署)：目前推送 GitHub 尚不会自动更新网站。
+[公开网站](https://chinese-history-map.vercel.app)已于 **2026-09-07** 部署并验证，实时搜索、地图定位和图钉收藏均正常。Vercel 已连接本 GitHub 仓库：推送到 `master` 会自动部署生产网站，其他分支会生成预览部署。发布修改前请阅读[当前部署与更新方式](docs/deployment.md#当前部署)。
 
 如果用于个人、非商业项目，推荐从 **Vercel Hobby** 开始。本项目是包含动态 `/api/places` 接口的 Next.js 应用，需要服务端或 Serverless 运行环境；单独使用 GitHub Pages 无法运行完整应用。
 
